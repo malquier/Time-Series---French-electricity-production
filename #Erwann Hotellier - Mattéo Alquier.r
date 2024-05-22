@@ -1,8 +1,3 @@
-#Erwann Hotellier - Mattéo Alquier
-#Linear Time Series Projet
-#Production Indice of electricity
-
-
 # Loading libraries
 library(readr)
 library(forecast)
@@ -91,6 +86,7 @@ if (pp_test$p.value < 0.05) {
 
 # Centering the differenced data
 centered_data1 <- diff_ts_data1 - mean(diff_ts_data1)
+mean(diff_ts_data1)
 
 # Displaying the centered data
 plot(centered_data1)
@@ -122,6 +118,8 @@ for (p in seq(0, pmax)) {
     models[[model_name]] <- list(model = modele, ljung_box_test = ljung_box_test, significance = significance, aic_bic = aic_bic)
   }
 }
+
+print (models)
 
 # Initializing AIC and BIC tables
 tableau_aic <- matrix(NA, nrow = pmax + 1, ncol = qmax + 1)
@@ -162,6 +160,31 @@ BIC_value <- modele$bic
 print(paste("AIC:", AIC_value))
 print(paste("BIC:", BIC_value))
 
+
+
+#Creation of the unit disc
+
+arima201 <- arima(centered_data1, c(2,0,1))
+
+adj_r2 <- function(model){
+  p <- model$arma[1]
+  q <- model$arma[2]
+  n <- model$nobs-max(p,q)
+  ss_res <- sum(model$residuals^2)
+  ss_tot <- sum(centered_data1[-c(1:max(p,q))]^2)
+  adj_r2 <- 1-(ss_res/(n-p-q-1))/(ss_tot/(n-1))
+  return(adj_r2)
+}
+adj_r2(arima201)
+
+Arima(centered_data1, order = c(2, 0, 1), xreg = seq_along(centered_data1), include.mean=F) %>%
+  autoplot()
+
+
+
+
+
+
 # Plotting the autocorrelation function of residuals
 par(mfrow = c(1, 1))
 acf(modele$residuals, 50, main = "Autocorrelation Function of Residuals")
@@ -191,10 +214,14 @@ print(portmanteau_test)
 
 data1_2015 <- subset(data1, Date >= as.Date("2015-01-01"))
 
+
+
+
 # Creating the time series object from 2015
 Data1_2015.ts <- ts(data1_2015$IPI_elec, start = c(2015, 1), end = c(2023, 12), frequency = 12)
 
 modele <- arima(Data1_2015.ts, c(2, 1, 1))
+
 
 # Forecasting for the next 4 months
 Prevision <- predict(modele, n.ahead = 4)
@@ -245,3 +272,4 @@ dev.off()
 
 # Graphical display of the confidence region
 plot(forecast(modele, h = 4))
+ 
