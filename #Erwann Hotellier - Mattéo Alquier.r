@@ -14,7 +14,7 @@ library(tseries)
 library(ellipse)
 
 # Defining the path to the CSV file
-path_donnees <- "C:/Users/Erwan/OneDrive/Bureau/valeurs_mensuelles.csv"
+path_donnees <- "C:/Users/alqui/Downloads/serie_010768228_18052024/tmpZipSerieCsv2990033781039194211/valeurs_mensuelles.csv"
 
 # Reading the CSV file
 data1 <- read_delim(path_donnees, delim = ";", escape_double = FALSE, show_col_types = FALSE)
@@ -167,7 +167,7 @@ par(mfrow = c(1, 1))
 acf(modele$residuals, 50, main = "Autocorrelation Function of Residuals")
 
 # Plotting the histogram of residuals
-hist(modele$residuals, freq = FALSE, main = "Histogram of Residuals", xlab = "Residuals", ylab = "Density")
+hist(modele$residuals, freq = FALSE, main = "Histogram of Residuals", xlab = "Residuals", ylab = "Density", breaks = 10)
 
 # Plotting the normal density curve
 curve(dnorm(x, mean = mean(modele$residuals), sd = sd(modele$residuals)), 
@@ -245,3 +245,19 @@ dev.off()
 
 # Graphical display of the confidence region
 plot(forecast(modele, h = 4))
+
+
+#Creation of the unit disc
+
+arima201 <- arima(centered_data1, c(2,0,1))
+
+adj_r2 <- function(model){
+  p <- model$arma[1]
+  q <- model$arma[2]
+  n <- model$nobs-max(p,q)
+  ss_res <- sum(model$residuals^2)
+  ss_tot <- sum(centered_data1[-c(1:max(p,q))]^2)
+  adj_r2 <- 1-(ss_res/(n-p-q-1))/(ss_tot/(n-1))
+  return(adj_r2)
+}
+adj_r2(arima201)
